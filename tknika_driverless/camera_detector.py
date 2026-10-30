@@ -10,6 +10,10 @@ from rclpy.qos import qos_profile_sensor_data
 
 from sensor_msgs.msg import Image
 from ultralytics import YOLO
+from tknika_interfaces.msg import (
+    ConeDetection,
+    ConeDetectionArray,
+)
 
 
 class CameraDetector(Node):
@@ -59,6 +63,12 @@ class CameraDetector(Node):
             "/tknika/camera/detections_image",
             qos_profile_sensor_data,
         )
+        self.detections_pub = self.create_publisher(
+            ConeDetectionArray,
+            "/tknika/camera/detections",
+            qos_profile_sensor_data,
+        )
+
 
         self.image_sub = self.create_subscription(
             Image,
@@ -77,6 +87,9 @@ class CameraDetector(Node):
         )
         self.get_logger().info(
             "Output: /tknika/camera/detections_image"
+        )
+        self.get_logger().info(
+            "Output detections: /tknika/camera/detections"
         )
 
     @staticmethod
@@ -106,7 +119,6 @@ class CameraDetector(Node):
         return image[:, :, :3][:, :, ::-1].copy()
 
     def image_callback(self, msg):
-
         try:
             frame = self.image_to_bgr(msg)
 
@@ -118,6 +130,57 @@ class CameraDetector(Node):
             )
 
             result = results[0]
+
+            # ------------------------------------------------
+            # 1. CREATE STRUCTURED DETECTION MESSAGE
+            # ------------------------------------------------
+
+            detections_msg = ConeDetectionArray()
+            
+            # Preserve the original camera timestamp and frame.
+            detections_msg.header = msg.header
+
+            # Extract every detected cone.
+            for box in result.boxes:
+                
+                detection = ConeDetection()
+                
+                # Cone classification.
+                class_id = int(box.cls.item())
+                
+                detection.class_id = class_id
+                
+                detection.class_name = str(
+                    result.names[class_id]
+                )
+                
+                # Detection confidence.
+                detection.confidence = float(
+                    box.conf.item()
+                )
+
+                # Bounding box coordinates.
+                x_min, y_min, x_max, y_max = (
+                    box.xyxy[0].tolist()
+                )
+
+                detection.x_min = float(x_min)
+                detection.y_min = float(y_min)
+                detection.x_max = float(x_max)
+                detection.y_max = float(y_max)
+
+                # Add detection to the array.
+                detections_msg.detections.append(
+                    detection
+                )
+
+                # Publish structured detections.
+                self.detections_pub.publish(
+                    detections_msg
+                )
+            # ------------------------------------------------
+            # 2. CREATE ANNOTATED IMAGE - Rvizen araztatzeko
+            # ------------------------------------------------
 
             # Ultralytics returns an annotated BGR image.
             annotated = result.plot()
@@ -132,6 +195,10 @@ class CameraDetector(Node):
             output.data = annotated.tobytes()
 
             self.image_pub.publish(output)
+
+            # ------------------------------------------------
+            # 3. LOGGING
+            # ------------------------------------------------
 
             self.processed_frames += 1
 

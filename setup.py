@@ -28,7 +28,7 @@ setup(
             "lidar_visualizer = tknika_driverless.lidar_visualizer:main",
             "cone_detector = tknika_driverless.cone_detector:main",
             "camera_detector = tknika_driverless.camera_detector:main",
-
+            'sensor_fusion = tknika_driverless.sensor_fusion:main',
         ],
     },
 )
