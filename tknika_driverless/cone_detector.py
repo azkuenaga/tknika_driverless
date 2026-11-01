@@ -383,21 +383,21 @@ class ConeDetector(Node):
 
         self.processed_scans += 1
 
-        if self.processed_scans % 10 == 0:
-            self.get_logger().info(
-                f"Scan {self.processed_scans}: "
-                f"{len(candidates)} filtered points, "
-                f"{len(cones)} candidate cones"
-            )
+        # if self.processed_scans % 10 == 0:
+        #     self.get_logger().info(
+        #         f"Scan {self.processed_scans}: "
+        #         f"{len(candidates)} filtered points, "
+        #         f"{len(cones)} candidate cones"
+        #     )
 
-            for index, cone in enumerate(cones):
-                self.get_logger().info(
-                    f"  Cone {index}: "
-                    f"x={cone['x']:.2f} m, "
-                    f"y={cone['y']:.2f} m, "
-                    f"points={cone['points']}, "
-                    f"width={cone['width']:.2f} m"
-                )
+        #     for index, cone in enumerate(cones):
+        #         self.get_logger().info(
+        #             f"  Cone {index}: "
+        #             f"x={cone['x']:.2f} m, "
+        #             f"y={cone['y']:.2f} m, "
+        #             f"points={cone['points']}, "
+        #             f"width={cone['width']:.2f} m"
+        #         )
 
     def publish_cones(self, cones, stamp):
 

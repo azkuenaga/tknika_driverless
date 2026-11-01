@@ -205,20 +205,20 @@ class CameraDetector(Node):
             if self.processed_frames % 30 == 0:
                 boxes = result.boxes
 
-                self.get_logger().info(
-                    f"Frames processed: {self.processed_frames}, "
-                    f"detections: {len(boxes)}"
-                )
+                # self.get_logger().info(
+                #     f"Frames processed: {self.processed_frames}, "
+                #     f"detections: {len(boxes)}"
+                # )
 
                 for box in boxes:
                     class_id = int(box.cls.item())
                     confidence = float(box.conf.item())
                     class_name = result.names[class_id]
 
-                    self.get_logger().info(
-                        f"  {class_name}: "
-                        f"confidence={confidence:.2f}"
-                    )
+                    # self.get_logger().info(
+                    #     f"  {class_name}: "
+                    #     f"confidence={confidence:.2f}"
+                    # )
 
         except Exception as exc:
             self.get_logger().error(
